@@ -9,7 +9,7 @@ The GUI will be the "HOW" - how do we show this to the user?
 
 Rob Ranf
 DEV 128 Fall 2025 Section 27802
-
+https://github.com/rlr524/dev-128-prog-project-2
 """
 
 import sqlite3

@@ -12,6 +12,7 @@ Flow: User Action → GUI Method → Database Function → Update GUI
 
 Rob Ranf
 DEV 128 Fall 2025 Section 27802
+https://github.com/rlr524/dev-128-prog-project-2
 """
 
 import tkinter as tk
@@ -304,7 +305,8 @@ class CRUDApplication:
         # Create display window
         read_window = tk.Toplevel(self.root)
         read_window.title("Person Details")
-        read_window.geometry("400x300")
+        read_window.geometry("800x600")
+        read_window.option_add("*Font", "Arial 14")
         
         # Format details nicely
         details = f"""
@@ -324,8 +326,8 @@ Notes:
         """
         
         # Display as label
-        tk.Label(read_window, text=details, 
-                justify='left', font=('Arial', 11)).pack(padx=20, pady=20)
+        tk.Label(read_window, text=details, wraplength=400,
+                justify='left', font=('Arial', 12)).pack(padx=20, pady=20)
         
         # Close button
         tk.Button(read_window, text="Close", 
