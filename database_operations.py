@@ -6,6 +6,10 @@ It knows NOTHING about the GUI - no tkinter imports!
 
 Think of this as the "WHAT" - what data operations can we perform?
 The GUI will be the "HOW" - how do we show this to the user?
+
+Rob Ranf
+DEV 128 Fall 2025 Section 27802
+
 """
 
 import sqlite3
@@ -29,7 +33,13 @@ def create_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
-            email TEXT,
+            email TEXT NOT NULL,
+            job_title TEXT NOT NULL,
+            street TEXT NOT NULL,
+            street2 TEXT,
+            city TEXT NOT NULL,
+            state TEXT NOT NULL,
+            postal TEXT NOT NULL,
             notes TEXT
         )
     ''')
@@ -38,7 +48,7 @@ def create_database():
     conn.close()
 
 
-def add_person(first_name, last_name, email, notes):
+def add_person(first_name, last_name, email, job_title, street, street2, city, state, postal, notes):
     """
     Add a new person to the database.
     
@@ -46,6 +56,12 @@ def add_person(first_name, last_name, email, notes):
         first_name (str): Person's first name (required)
         last_name (str): Person's last name (required)
         email (str): Person's email address (optional)
+        job_title (str): Person's job title (required)
+        street (str): Person's street address (required)
+        street2 (str): Person's suite/apartment/unit (optional)
+        city (str): Person's city (required)
+        state (str): Person's USPS state code (required)
+        postal (str): Person's postal/zip code (required)
         notes (str): Additional notes about the person (optional)
     
     Returns:
@@ -57,9 +73,9 @@ def add_person(first_name, last_name, email, notes):
     cursor = conn.cursor()
     
     cursor.execute('''
-        INSERT INTO people (first_name, last_name, email, notes)
-        VALUES (?, ?, ?, ?)
-    ''', (first_name, last_name, email, notes))
+        INSERT INTO people (first_name, last_name, email, job_title, street, street2, city, state, postal, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (first_name, last_name, email, job_title, street, street2, city, state, postal, notes))
     
     # Get the ID of the person we just created
     person_id = cursor.lastrowid
@@ -104,7 +120,8 @@ def get_person_by_id(person_id):
         person_id (int): The unique ID of the person to retrieve
     
     Returns:
-        tuple or None: (id, first_name, last_name, email, notes) if found, None if not found
+        tuple or None: (id, first_name, last_name, email, street, street2, city, state, postal, notes) if found,
+        None if not found
     
     This includes ALL fields including notes, used for detailed views and editing.
     """
@@ -119,7 +136,7 @@ def get_person_by_id(person_id):
     return person
 
 
-def update_person(person_id, first_name, last_name, email, notes):
+def update_person(person_id, first_name, last_name, email, job_title, street, street2, city, state, postal, notes):
     """
     Update an existing person's information.
     
@@ -128,6 +145,12 @@ def update_person(person_id, first_name, last_name, email, notes):
         first_name (str): New first name
         last_name (str): New last name
         email (str): New email address
+        job_title (str): New job title
+        street (str): New street address
+        street2 (str): New suite/apt/unit (optional)
+        city (str): New city
+        state (str): New state
+        postal (str): New postal/zip code
         notes (str): New notes
     
     Returns:
@@ -141,9 +164,9 @@ def update_person(person_id, first_name, last_name, email, notes):
     
     cursor.execute('''
         UPDATE people 
-        SET first_name=?, last_name=?, email=?, notes=?
+        SET first_name=?, last_name=?, email=?, job_title=?, street=?, street2=?, city=?, state=?, postal=?, notes=?
         WHERE id=?
-    ''', (first_name, last_name, email, notes, person_id))
+    ''', (first_name, last_name, email, job_title, street, street2, city, state, postal, notes, person_id))
     
     # Check if any row was actually updated
     rows_affected = cursor.rowcount
@@ -180,13 +203,19 @@ def delete_person(person_id):
     return rows_affected > 0
 
 
-def validate_person_data(first_name, last_name):
+def validate_person_data(first_name, last_name, email, job_title, street, city, state, postal):
     """
     Validate that required fields are present.
     
     Parameters:
         first_name (str): First name to validate
         last_name (str): Last name to validate
+        email (str): Email to validate
+        job_title (str): Job title to validate
+        street (str): Street address to validate
+        city (str): City to validate
+        state (str): State to validate and confirm matches an abbreviation in the state_codes list
+        postal (str): Postal code to validate
     
     Returns:
         tuple: (is_valid, error_message)
@@ -196,14 +225,47 @@ def validate_person_data(first_name, last_name):
     Business Rules:
         - First name is required and cannot be empty/whitespace
         - Last name is required and cannot be empty/whitespace
-        - Email and notes are optional (validated elsewhere if needed)
+        - Email is required and cannot be empty/whitespace
+        - Job title is required and cannot be empty/whitespace
+        - Street address is required and cannot be empty/whitespace
+        - City is required and cannot be empty/whitespace
+        - State is required and cannot be empty/whitespace
+        - Postal code is required and cannot be empty/whitespace
+        - Notes are optional (validated elsewhere if needed)
+        - Street address 2 (suite/apt/unit) is optional
     """
+    # List of state abbreviations for State dropdown (https://gist.github.com/JeffPaine/3083347)
+    state_codes = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL",
+               "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
+               "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV",
+               "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA",
+               "VT", "WA", "WI", "WV", "WY"]
+
     # Strip whitespace and check if empty
     if not first_name or not first_name.strip():
         return False, "First name is required"
     
     if not last_name or not last_name.strip():
         return False, "Last name is required"
+
+    if not email or not email.strip():
+        return False, "Email is required"
+
+    if not job_title or not  job_title.strip():
+        return False, "Job title is required"
+
+    if not street or not street.strip():
+        return False, "Street address is required"
+
+    if not city or not city.strip():
+        return False, "City is required"
+
+    # Check if state is a valid US state or DC abbreviation
+    if not state or not state.strip() or state not in state_codes:
+        return False, "Please enter a valid USPS state abbreviation"
+
+    if not postal or not postal.strip():
+        return False, "Please enter a postal/zip code"
     
     # All validation passed
     return True, ""

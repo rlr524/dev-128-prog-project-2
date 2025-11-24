@@ -9,6 +9,9 @@ The database_operations.py file is the "WHAT" - what operations can we perform?
 
 Key Pattern: GUI methods call database functions, then update the display.
 Flow: User Action → GUI Method → Database Function → Update GUI
+
+Rob Ranf
+DEV 128 Fall 2025 Section 27802
 """
 
 import tkinter as tk
@@ -102,7 +105,7 @@ class CRUDApplication:
         """
         # Main container frame
         main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Title label
         tk.Label(main_frame, text="People List", 
@@ -110,17 +113,17 @@ class CRUDApplication:
         
         # Listbox with scrollbar
         listbox_frame = tk.Frame(main_frame)
-        listbox_frame.pack(fill=tk.BOTH, expand=True)
+        listbox_frame.pack(fill="both", expand=True)
         
         # Scrollbar on the right
         scrollbar = tk.Scrollbar(listbox_frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollbar.pack(side="right", fill="y")
         
         # Listbox shows people - stores one person per line
         self.listbox = tk.Listbox(listbox_frame, 
                                   yscrollcommand=scrollbar.set, 
-                                  font=('Arial', 10))
-        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                                  font=('Arial', 14))
+        self.listbox.pack(side="left", fill="both", expand=True)
         
         # Connect scrollbar to listbox
         scrollbar.config(command=self.listbox.yview)
@@ -160,30 +163,62 @@ class CRUDApplication:
         # Create popup window
         add_window = tk.Toplevel(self.root)
         add_window.title("Add Person")
-        add_window.geometry("400x300")
+        add_window.geometry("600x600")
+        add_window.option_add("*Font", "Arial 14")
         
         # Form fields - using grid layout for alignment
-        tk.Label(add_window, text="First Name:").grid(
+        tk.Label(add_window, text="First Name*:").grid(
             row=0, column=0, sticky='e', padx=5, pady=5)
         first_entry = tk.Entry(add_window, width=30)
         first_entry.grid(row=0, column=1, padx=5, pady=5)
         first_entry.focus()  # Cursor starts here
         
-        tk.Label(add_window, text="Last Name:").grid(
+        tk.Label(add_window, text="Last Name*:").grid(
             row=1, column=0, sticky='e', padx=5, pady=5)
         last_entry = tk.Entry(add_window, width=30)
         last_entry.grid(row=1, column=1, padx=5, pady=5)
         
-        tk.Label(add_window, text="Email:").grid(
+        tk.Label(add_window, text="Email*:").grid(
             row=2, column=0, sticky='e', padx=5, pady=5)
         email_entry = tk.Entry(add_window, width=30)
         email_entry.grid(row=2, column=1, padx=5, pady=5)
-        
+
+        tk.Label(add_window, text="Job Title*:").grid(
+            row=3, column=0, sticky='e', padx=5, pady=5)
+        job_title_entry = tk.Entry(add_window, width=30)
+        job_title_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        tk.Label(add_window, text="Street Address*:").grid(
+            row=4, column=0, sticky='e', padx=5, pady=5)
+        street_address_entry = tk.Entry(add_window, width=30)
+        street_address_entry.grid(row=4, column=1, padx=5, pady=5)
+
+        tk.Label(add_window, text="Suite/Apt/Unit:").grid(
+            row=5, column=0, sticky='e', padx=5, pady=5)
+        street_address_2_entry = tk.Entry(add_window, width=30)
+        street_address_2_entry.grid(row=5, column=1, padx=5, pady=5)
+
+        tk.Label(add_window, text="City*:").grid(
+            row=6, column=0, sticky='e', padx=5, pady=5)
+        city_entry = tk.Entry(add_window, width=30)
+        city_entry.grid(row=6, column=1, padx=5, pady=5)
+
+        tk.Label(add_window, text="State*:").grid(
+            row=7, column=0, sticky='e', padx=5, pady=5)
+        state_entry = tk.Entry(add_window, width=3)
+        state_entry.grid(row=7, column=1, sticky='w', padx=5, pady=5)
+
+        tk.Label(add_window, text="Postal Code*:").grid(
+            row=8, column=0, sticky='e', padx=5, pady=5)
+        postal_entry = tk.Entry(add_window, width=30)
+        postal_entry.grid(row=8, column=1, padx=5, pady=5)
+
+        # Need to move notes to last here as, weirdly, code order determines the field tab focus order, not the row attribute
         tk.Label(add_window, text="Notes:").grid(
-            row=3, column=0, sticky='ne', padx=5, pady=5)
+            row=9, column=0, sticky='ne', padx=5, pady=5)
         notes_text = tk.Text(add_window, width=30, height=5)
-        notes_text.grid(row=3, column=1, padx=5, pady=5)
-        
+        notes_text.grid(row=9, column=1, padx=5, pady=5)
+
         def save_person():
             """
             Inner function that handles the Save button click.
@@ -193,17 +228,23 @@ class CRUDApplication:
             first = first_entry.get().strip()
             last = last_entry.get().strip()
             email = email_entry.get().strip()
+            job = job_title_entry.get().strip()
+            street = street_address_entry.get().strip()
+            street2 = street_address_2_entry.get().strip()
+            city = city_entry.get().strip()
+            state = state_entry.get().strip()
+            postal = postal_entry.get().strip()
             notes = notes_text.get("1.0", tk.END).strip()
             
             # Validate using business logic layer
-            is_valid, error_message = database.validate_person_data(first, last)
+            is_valid, error_message = database.validate_person_data(first, last, email, job, street, city, state, postal)
             
             if not is_valid:
                 messagebox.showerror("Validation Error", error_message)
                 return
             
             # Call business logic to add person
-            person_id = database.add_person(first, last, email, notes)
+            person_id = database.add_person(first, last, email, job, street, street2, city, state, postal, notes)
             
             # Show success message
             messagebox.showinfo("Success", 
@@ -214,10 +255,15 @@ class CRUDApplication:
             
             # Refresh the main list to show the new person
             self.refresh_list()
-        
+
+        def cancel_window():
+            add_window.destroy()
+
         # Save button
-        tk.Button(add_window, text="Save", 
-                 command=save_person, width=15).grid(row=4, column=1, pady=10)
+        tk.Button(add_window, text="Save", command=save_person, width=10).grid(row=10, column=0, pady=10)
+
+        # Cancel button
+        tk.Button(add_window, text="Cancel", command=cancel_window, width=10).grid(row=10, column=1, pady=10)
     
     
     def read_person(self):
@@ -253,7 +299,7 @@ class CRUDApplication:
         
         # Unpack tuple for readability
         # person = (id, first_name, last_name, email, notes)
-        pid, first, last, email, notes = person
+        pid, first, last, email, job, street, street2, city, state, postal, notes = person
         
         # Create display window
         read_window = tk.Toplevel(self.root)
@@ -265,7 +311,13 @@ class CRUDApplication:
 ID: {pid}
 First Name: {first}
 Last Name: {last}
-Email: {email if email else '(not provided)'}
+Email: {email}
+Job Title: {job}
+Street Address: {street}
+Street Address 2: {street2 if street2 else '(not provided)'}
+City: {city}
+State: {state}
+Postal Code: {postal}
 
 Notes:
 {notes if notes else '(no notes)'}
@@ -314,57 +366,100 @@ Notes:
             return
         
         # Unpack current values
-        pid, first, last, email, notes = person
+        pid, first, last, email, job, street, street2, city, state, postal, notes = person
         
         # Create edit window
         edit_window = tk.Toplevel(self.root)
         edit_window.title("Edit Person")
-        edit_window.geometry("400x300")
+        edit_window.geometry("600x600")
+        edit_window.option_add("*Font", "Arial 14")
         
         # Form fields pre-filled with current data
-        tk.Label(edit_window, text="First Name:").grid(
+        tk.Label(edit_window, text="First Name*:").grid(
             row=0, column=0, sticky='e', padx=5, pady=5)
-        first_entry = tk.Entry(edit_window, width=30)
-        first_entry.insert(0, first)  # Pre-fill with current value
-        first_entry.grid(row=0, column=1, padx=5, pady=5)
+        first_edit = tk.Entry(edit_window, width=30)
+        first_edit.insert(0, first)  # Pre-fill with current value
+        first_edit.grid(row=0, column=1, padx=5, pady=5)
         
-        tk.Label(edit_window, text="Last Name:").grid(
+        tk.Label(edit_window, text="Last Name*:").grid(
             row=1, column=0, sticky='e', padx=5, pady=5)
-        last_entry = tk.Entry(edit_window, width=30)
-        last_entry.insert(0, last)
-        last_entry.grid(row=1, column=1, padx=5, pady=5)
+        last_edit = tk.Entry(edit_window, width=30)
+        last_edit.insert(0, last)
+        last_edit.grid(row=1, column=1, padx=5, pady=5)
         
-        tk.Label(edit_window, text="Email:").grid(
+        tk.Label(edit_window, text="Email*:").grid(
             row=2, column=0, sticky='e', padx=5, pady=5)
-        email_entry = tk.Entry(edit_window, width=30)
-        email_entry.insert(0, email if email else "")
-        email_entry.grid(row=2, column=1, padx=5, pady=5)
-        
+        email_edit = tk.Entry(edit_window, width=30)
+        email_edit.insert(0, email)
+        email_edit.grid(row=2, column=1, padx=5, pady=5)
+
+        tk.Label(edit_window, text="Job Title*:").grid(
+            row=3, column=0, sticky='e', padx=5, pady=5)
+        job_edit = tk.Entry(edit_window, width=30)
+        job_edit.insert(0, job)
+        job_edit.grid(row=3, column=1, padx=5, pady=5)
+
+        tk.Label(edit_window, text="Street Address*:").grid(
+            row=4, column=0, sticky='e', padx=5, pady=5)
+        street_edit = tk.Entry(edit_window, width=30)
+        street_edit.insert(0, street)
+        street_edit.grid(row=4, column=1, padx=5, pady=5)
+
+        tk.Label(edit_window, text="Suite/Apt/Unit:").grid(
+            row=5, column=0, sticky='e', padx=5, pady=5)
+        street_2_edit = tk.Entry(edit_window, width=30)
+        street_2_edit.insert(0, street2)
+        street_2_edit.grid(row=5, column=1, padx=5, pady=5)
+
+        tk.Label(edit_window, text="City*:").grid(
+            row=6, column=0, sticky='e', padx=5, pady=5)
+        city_edit = tk.Entry(edit_window, width=30)
+        city_edit.insert(0, city)
+        city_edit.grid(row=6, column=1, padx=5, pady=5)
+
+        tk.Label(edit_window, text="State*:").grid(
+            row=7, column=0, sticky='e', padx=5, pady=5)
+        state_edit = tk.Entry(edit_window, width=30)
+        state_edit.insert(0, state)
+        state_edit.grid(row=7, column=1, sticky='w', padx=5, pady=5)
+
+        tk.Label(edit_window, text="Postal Code*:").grid(
+            row=8, column=0, sticky='e', padx=5, pady=5)
+        postal_edit = tk.Entry(edit_window, width=30)
+        postal_edit.insert(0, postal)
+        postal_edit.grid(row=8, column=1, padx=5, pady=5)
+
         tk.Label(edit_window, text="Notes:").grid(
-            row=3, column=0, sticky='ne', padx=5, pady=5)
-        notes_text = tk.Text(edit_window, width=30, height=5)
-        notes_text.insert("1.0", notes if notes else "")
-        notes_text.grid(row=3, column=1, padx=5, pady=5)
+            row=9, column=0, sticky='ne', padx=5, pady=5)
+        notes_text_edit = tk.Text(edit_window, width=30, height=5)
+        notes_text_edit.insert("1.0", notes if notes else "")
+        notes_text_edit.grid(row=9, column=1, padx=5, pady=5)
         
         def update_person():
             """
             Function that handles the Update button click.
             """
             # Get modified values (recall that strip will remove any leading or ending spaces)
-            first = first_entry.get().strip()
-            last = last_entry.get().strip()
-            email = email_entry.get().strip()
-            notes = notes_text.get("1.0", tk.END).strip() # from the starting position of line 1 character 0 to the end of all text
+            first_e = first_edit.get().strip()
+            last_e = last_edit.get().strip()
+            email_e = email_edit.get().strip()
+            job_e = job_edit.get().strip()
+            street_e = street_edit.get().strip()
+            street_2_e = street_2_edit.get().strip()
+            city_e = city_edit.get().strip()
+            state_e = state_edit.get().strip()
+            postal_e = postal_edit.get().strip()
+            notes_e = notes_text_edit.get("1.0", tk.END).strip() # from the starting position of line 1 character 0 to the end of all text
             
-            # Validate first and last name 
-            is_valid, error_message = database.validate_person_data(first, last)
-            
+            # Validate all required fields
+            is_valid, error_message = database.validate_person_data(first_e, last_e, email_e, job_e, street_e, city_e, state_e, postal_e)
+
             if not is_valid:
                 messagebox.showerror("Validation Error", error_message)
                 return
             
             # Call business logic to update database file
-            success = database.update_person(person_id, first, last, email, notes)
+            success = database.update_person(person_id, first_e, last_e, email_e, job_e, street_e, street_2_e, city_e, state_e, postal_e, notes_e)
             
             if success:
                 messagebox.showinfo("Success", "Person updated successfully!")
@@ -372,10 +467,16 @@ Notes:
                 self.refresh_list() # refresh the list of people in our main frame
             else:
                 messagebox.showerror("Error", "Failed to update person!")
+
+        def cancel_window():
+            edit_window.destroy()
         
         # Update button
         tk.Button(edit_window, text="Update", 
-                 command=update_person, width=15).grid(row=4, column=1, pady=10)
+                 command=update_person, width=15).grid(row=10, column=0, pady=10)
+
+        # Cancel button
+        tk.Button(edit_window, text="Cancel", command=cancel_window, width=10).grid(row=10, column=1, pady=10)
     
     
     def delete_person(self):
